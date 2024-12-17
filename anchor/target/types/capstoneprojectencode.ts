@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/capstoneprojectencode.json`.
  */
 export type Capstoneprojectencode = {
-  "address": "coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF",
+  "address": "5rwPBBSHeHrhBAN7PCDxg7aqA1zrS4PzZS7Mg3b5ainm",
   "metadata": {
     "name": "capstoneprojectencode",
     "version": "0.1.0",
@@ -138,14 +138,14 @@ export type Capstoneprojectencode = {
     {
       "name": "capstoneprojectencode",
       "discriminator": [
-        255,
-        176,
-        4,
-        245,
-        188,
-        253,
-        124,
-        25
+        168,
+        65,
+        241,
+        144,
+        89,
+        112,
+        38,
+        31
       ]
     }
   ],
