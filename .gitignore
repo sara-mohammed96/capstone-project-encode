@@ -35,3 +35,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 tmp
+
+# nix
+*.nix
+.envrc
+.direnv
+flake.lock
+flake.nix

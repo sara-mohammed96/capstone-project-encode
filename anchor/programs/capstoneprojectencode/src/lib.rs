@@ -2,23 +2,13 @@
 
 use anchor_lang::prelude::*;
 
-declare_id!("coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF");
+declare_id!("2hdUghEmtvvHjJpe6npchQQrbiCJZCXuX9B1Yno8FpN9");
 
 #[program]
 pub mod capstoneprojectencode {
-    use super::*;
+  use super::*;
 
   pub fn close(_ctx: Context<CloseCapstoneprojectencode>) -> Result<()> {
-    Ok(())
-  }
-
-  pub fn decrement(ctx: Context<Update>) -> Result<()> {
-    ctx.accounts.capstoneprojectencode.count = ctx.accounts.capstoneprojectencode.count.checked_sub(1).unwrap();
-    Ok(())
-  }
-
-  pub fn increment(ctx: Context<Update>) -> Result<()> {
-    ctx.accounts.capstoneprojectencode.count = ctx.accounts.capstoneprojectencode.count.checked_add(1).unwrap();
     Ok(())
   }
 
@@ -26,10 +16,18 @@ pub mod capstoneprojectencode {
     Ok(())
   }
 
-  pub fn set(ctx: Context<Update>, value: u8) -> Result<()> {
-    ctx.accounts.capstoneprojectencode.count = value.clone();
-    Ok(())
+  pub fn fetch_validators(ctx: Context<FetchValidators>) -> Result<()> {
+      let vote_accounts = &ctx.accounts.vote_accounts;
+
+      // Example: Iterate through vote accounts and print validator details
+      for vote_account_info in vote_accounts.iter() {
+          let vote_state = VoteState::deserialize(&mut &vote_account_info.data[..]).unwrap();
+          msg!("Validator: {:?}", vote_state.node_pubkey);
+      }
+
+      Ok(())
   }
+
 }
 
 #[derive(Accounts)]
@@ -58,13 +56,14 @@ pub struct CloseCapstoneprojectencode<'info> {
 }
 
 #[derive(Accounts)]
-pub struct Update<'info> {
-  #[account(mut)]
-  pub capstoneprojectencode: Account<'info, Capstoneprojectencode>,
+pub struct FetchValidators<'info> {
+    /// A generic account list to represent vote accounts
+    #[account(address = solana_program::vote::program::ID)]
+    pub vote_accounts: AccountInfo<'info>,
 }
 
-#[account]
-#[derive(InitSpace)]
-pub struct Capstoneprojectencode {
-  count: u8,
-}
+//#[account]
+//#[derive(InitSpace)]
+//pub struct Capstoneprojectencode {
+//  count: u8,
+//}
