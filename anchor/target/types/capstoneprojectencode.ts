@@ -39,41 +39,24 @@ export type Capstoneprojectencode = {
       "args": []
     },
     {
-      "name": "decrement",
+      "name": "fetchValidators",
       "discriminator": [
-        106,
-        227,
-        168,
-        59,
-        248,
-        27,
-        150,
-        101
+        92,
+        233,
+        241,
+        145,
+        93,
+        204,
+        208,
+        223
       ],
       "accounts": [
         {
-          "name": "capstoneprojectencode",
-          "writable": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "increment",
-      "discriminator": [
-        11,
-        18,
-        104,
-        9,
-        104,
-        174,
-        59,
-        33
-      ],
-      "accounts": [
-        {
-          "name": "capstoneprojectencode",
-          "writable": true
+          "name": "voteAccounts",
+          "docs": [
+            "A generic account list to represent vote accounts"
+          ],
+          "address": "Vote111111111111111111111111111111111111111"
         }
       ],
       "args": []
@@ -107,31 +90,6 @@ export type Capstoneprojectencode = {
         }
       ],
       "args": []
-    },
-    {
-      "name": "set",
-      "discriminator": [
-        198,
-        51,
-        53,
-        241,
-        116,
-        29,
-        126,
-        194
-      ],
-      "accounts": [
-        {
-          "name": "capstoneprojectencode",
-          "writable": true
-        }
-      ],
-      "args": [
-        {
-          "name": "value",
-          "type": "u8"
-        }
-      ]
     }
   ],
   "accounts": [
