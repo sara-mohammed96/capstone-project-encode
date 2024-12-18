@@ -4,7 +4,8 @@
 
 html,
 body {
-    height: 100%;
+    /* background-color: rgba(17,13,31,255); */
+    background-color: rgb(64, 54, 100);
 }
 
 .wallet-adapter-button-trigger {
