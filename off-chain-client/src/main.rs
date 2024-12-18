@@ -1,69 +1,79 @@
-// use anchor_client::Program;
-use anchor_client::anchor_lang::prelude::Pubkey;
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::{
-    signature::{Keypair, read_keypair_file},
-    signer::Signer,
     commitment_config::CommitmentConfig,
 };
-// use anyhow::Result;
 
-const RPC_URL: &str = "http://127.0.0.1:8899"; // Localnet RPC URL
-// const PROGRAM_ID: &str = "YourProgramID1111111111111111111111111111111111"; // Replace with your Anchor program ID
-const PAYER_KEYPAIR_PATH: &str = "~/.config/solana/id.json"; // Replace with your keypair path
+use axum::{routing::get, Router, response::IntoResponse, Json};
+use tower_http::cors::{CorsLayer, AllowMethods, AllowHeaders, Any};
+use axum::http::{Method, header::HeaderName};  // Import Method and HeaderName from axum's http module
+use serde::Serialize;
 
-// #[tokio::main]
-fn main() -> Result<()> {
-    // 1. Set up the Solana RPC client
-    let rpc_client = RpcClient::new_with_commitment(RPC_URL.to_string(), CommitmentConfig::confirmed());
-    
-    // 2. Load the payer's keypair
-    let payer = read_keypair_file(shellexpand::tilde(PAYER_KEYPAIR_PATH).to_string())?;
-    println!("Using payer: {}", payer.pubkey());
+const RPC_URL: &str = "http://127.0.0.1:8899";
 
-    // 3. Fetch all vote accounts
-    let vote_accounts = rpc_client.get_vote_accounts()?.current;
-    println!("Found {} vote accounts.", vote_accounts.len());
+#[tokio::main]
+async fn main() {
+     // Define CORS settings
+    let cors = CorsLayer::new()
+        .allow_origin(Any)  // Allow all origins (you can restrict this to your frontend's origin)
+        .allow_methods(AllowMethods::from(vec![Method::GET]))  // Allow only GET requests
+        .allow_headers(AllowHeaders::from(vec![HeaderName::from_static("content-type")]));  // Allow only "Content-Type" header 
 
-    // Extract their public keys
-    let vote_account_pubkeys: Vec<Pubkey> = vote_accounts
-        .iter()
-        .map(|vote_account| Pubkey::from_str(&vote_account.vote_pubkey).unwrap())
-        .collect();
+    let app = Router::new()
+        .route("/validators", get(get_validators))
+        .layer(cors);
 
-    for item in &vote_account_pubkeys {
-        println!("{:?}", item.to_bytes());
-    }
+    println!("Server running on port: http://127.0.0.1:3030");
 
-    // // 4. Set up Anchor client
-    // let wallet = anchor_client::solana_sdk::signature::Keypair::from_bytes(&payer.to_bytes())?;
-    // let client = anchor_client::Client::new_with_options(
-    //     anchor_client::Cluster::Localnet, // Use localnet RPC
-    //     wallet,
-    //     CommitmentConfig::confirmed(),
-    // );
-
-    // let program_id = Pubkey::from_str(PROGRAM_ID)?;
-    // let program: Program = client.program(program_id)?;
-
-    // // 5. Invoke the Anchor program's process_vote_accounts function
-    // let tx_sig = program
-    //     .request()
-    //     .accounts(anchor_client::anchor_lang::ToAccountMetas::to_account_metas(
-    //         &ProcessVoteAccounts { signer: payer.pubkey() },
-    //         None,
-    //     ))
-    //     .args((vote_account_pubkeys,))
-    //     .send()?;
-
-    // println!("Transaction Signature: {}", tx_sig);
-
-    Ok(())
+    axum::Server::bind(&"127.0.0.1:3030".parse().unwrap())
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
 }
 
-// Struct matching the Anchor program's accounts
-// #[derive(anchor_client::anchor_lang::Accounts)]
-// pub struct ProcessVoteAccounts {
-//     #[account(mut)]
-//     pub signer: Pubkey,
-// }
+#[derive(Serialize, Debug)]
+struct Validator {
+    id: usize,
+    name: String,
+    uptime: String,
+    fees: String,
+    location: String,
+}
+
+async fn get_validators() -> impl IntoResponse {
+    // Simulate fetching validators from Solana or any data source
+    match fetch_validators() {
+        Ok(validators) => {
+            println!("Fetched Validators: {:?}", validators);
+
+            Json(validators).into_response()
+        }
+        Err(err) => (
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Error: {}", err),
+        )
+            .into_response(),
+    }
+}
+
+fn fetch_validators() -> Result<Vec<Validator>, Box<dyn std::error::Error>> {
+    // Solana RPC client
+    let rpc_client = RpcClient::new_with_commitment(RPC_URL.to_string(), CommitmentConfig::confirmed());
+
+    // Fetch vote accounts
+    let vote_accounts = rpc_client.get_vote_accounts()?.current;
+
+    // Map vote accounts to Validator struct
+    let validators: Vec<Validator> = vote_accounts
+        .iter()
+        .enumerate()
+        .map(|(index, vote_account)| Validator {
+            id: index + 1,
+            name: format!("Validator {}", vote_account.vote_pubkey),
+            uptime: format!("{:.1}%", vote_account.epoch_vote_account),
+            fees: format!("{}%", vote_account.commission),
+            location: "Unknown".to_string(), // Placeholder
+        })
+        .collect();
+
+    Ok(validators)
+}
